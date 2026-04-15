@@ -119,7 +119,7 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
             }
 
             OutlinedButton(
-                onClick = {AddNewWordDialog(
+                onClick = {AddNewWord(
                     onUserNewWords = {gameViewModel.updateUserNewWord(it)},
                     newWord = gameViewModel.userNewWord,
                     onKeyboardDone = { gameViewModel.checkUserGuess() },
@@ -278,7 +278,7 @@ fun GameScreenPreview() {
 }
 
 @Composable
-private fun AddNewWordDialog(
+private fun AddNewWord(
     newWord: String,
     onUserNewWords: (String) -> Unit,
     onKeyboardDone: () -> Unit,
