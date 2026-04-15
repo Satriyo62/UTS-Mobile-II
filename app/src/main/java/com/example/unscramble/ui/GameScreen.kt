@@ -16,10 +16,13 @@
 package com.example.unscramble.ui
 
 import android.app.Activity
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -44,6 +47,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,12 +61,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
 import com.example.unscramble.ui.theme.UnscrambleTheme
 
 @Composable
-fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
+fun GameScreen(
+    gameViewModel: GameViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory.getInstance(LocalContext.current.applicationContext as Application)
+    )
+) {
     val gameUiState by gameViewModel.uiState.collectAsState()
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
 
@@ -117,24 +128,12 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
                     fontSize = 16.sp
                 )
             }
-
-            OutlinedButton(
-                onClick = {AddNewWord(
-                    onUserNewWords = {gameViewModel.updateUserNewWord(it)},
-                    newWord = gameViewModel.userNewWord,
-                    onKeyboardDone = { gameViewModel.checkUserGuess() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(mediumPadding)
-                )},
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.add_New_Word),
-                    fontSize = 16.sp
-                )
-            }
+            AddWordComponent(
+                onAddWord = { newWord ->
+                    gameViewModel.addNewWord(newWord)
+                },
+                modifier = Modifier.padding(top = 16.dp)
+            )
         }
 
         GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))
@@ -278,46 +277,34 @@ fun GameScreenPreview() {
 }
 
 @Composable
-private fun AddNewWord(
-    newWord: String,
-    onUserNewWords: (String) -> Unit,
-    onKeyboardDone: () -> Unit,
+fun AddWordComponent(
+    onAddWord: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val mediumPadding = dimensionResource(R.dimen.padding_medium)
+    var newWord by remember { mutableStateOf("") }
 
-    Card(
-        modifier = modifier,
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(mediumPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(mediumPadding)
+        OutlinedTextField(
+            value = newWord,
+            onValueChange = { newWord = it },
+            label = { Text("Masukkan kata baru") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                if (newWord.isNotBlank()) {
+                    onAddWord(newWord.trim())
+                    newWord = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "Add New Word",
-                style = typography.displayMedium
-            )
-            OutlinedTextField(
-                value = newWord,
-                singleLine = true,
-                shape = shapes.large,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = colorScheme.surface,
-                    unfocusedContainerColor = colorScheme.surface,
-                    disabledContainerColor = colorScheme.surface,
-                ),
-                onValueChange = onUserNewWords,
-                label = {Text(stringResource(R.string.enter_your_new_words))},
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { onKeyboardDone() }
-                )
-            )
+            Text("Simpan Kata")
         }
     }
 }
