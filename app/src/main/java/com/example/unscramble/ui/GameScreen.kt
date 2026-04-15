@@ -39,6 +39,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -113,6 +114,24 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
             ) {
                 Text(
                     text = stringResource(R.string.skip),
+                    fontSize = 16.sp
+                )
+            }
+
+            OutlinedButton(
+                onClick = {AddNewWordDialog(
+                    onUserNewWords = {gameViewModel.updateUserNewWord(it)},
+                    newWord = gameViewModel.userNewWord,
+                    onKeyboardDone = { gameViewModel.checkUserGuess() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(mediumPadding)
+                )},
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.add_New_Word),
                     fontSize = 16.sp
                 )
             }
@@ -255,5 +274,50 @@ private fun FinalScoreDialog(
 fun GameScreenPreview() {
     UnscrambleTheme {
         GameScreen()
+    }
+}
+
+@Composable
+private fun AddNewWordDialog(
+    newWord: String,
+    onUserNewWords: (String) -> Unit,
+    onKeyboardDone: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val mediumPadding = dimensionResource(R.dimen.padding_medium)
+
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(mediumPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(mediumPadding)
+        ) {
+            Text(
+                text = "Add New Word",
+                style = typography.displayMedium
+            )
+            OutlinedTextField(
+                value = newWord,
+                singleLine = true,
+                shape = shapes.large,
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorScheme.surface,
+                    unfocusedContainerColor = colorScheme.surface,
+                    disabledContainerColor = colorScheme.surface,
+                ),
+                onValueChange = onUserNewWords,
+                label = {Text(stringResource(R.string.enter_your_new_words))},
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { onKeyboardDone() }
+                )
+            )
+        }
     }
 }

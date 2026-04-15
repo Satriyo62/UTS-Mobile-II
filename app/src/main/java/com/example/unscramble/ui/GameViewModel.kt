@@ -39,10 +39,12 @@ class GameViewModel : ViewModel() {
 
     var userGuess by mutableStateOf("")
         private set
-
+    var userNewWord by mutableStateOf("")
     // Set of words used in the game
     private var usedWords: MutableSet<String> = mutableSetOf()
     private lateinit var currentWord: String
+
+    private lateinit var currentnewWord: String
 
     init {
         resetGame()
@@ -138,5 +140,18 @@ class GameViewModel : ViewModel() {
             usedWords.add(currentWord)
             shuffleCurrentWord(currentWord)
         }
+    }
+    fun addNewWord() {
+
+    }
+    fun checkUserNewWord() {
+        if (userNewWord.equals(currentWord, true)) {
+            print("the word you entered already exists")
+        } else {
+            addNewWord()
+        }
+    }
+    fun updateUserNewWord(latestWord: String){
+        userNewWord = latestWord
     }
 }
